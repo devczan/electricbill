@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Czan's Education</title>
+	 <script src="https://code.jquery.com/jquery-3.5.1.min.js">
+		  </script>
+		   <link rel="stylesheet" href="style/Sytle.css">
+	<style>
+		
+		  
+	.topnav	button{
+			background-color: black;
+			border:5px solid black;
+
+		}
+
+
+	.topnav {
+  overflow: hidden;
+  background-color: black;
+  margin: auto;
+}
+
+.topnav a {
+  float: left;
+  color:white;
+  text-align: center;
+  padding: 14px 26px;
+  text-decoration: none;
+  font-size: 27px;
+  background-color:black
+}
+
+.topnav a:hover {
+  background-color: white;
+  color: black;
+}
+	</style>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script>
+
+$(document).ready( function () {
+    $('#myTable').DataTable();
+} );
+</script>
+<script>
+          Date.prototype.monthDays= function(){
+          var d= new Date(this.getFullYear(), this.getMonth()+1, 0);
+          return d.getDate();
+      }
+      
+      function getSlab(sDate,eDate) {
+        var slab = 0;
+        if(sDate.getMonth() === eDate.getMonth()) {
+          slab += (eDate.getDate()+1 - sDate.getDate())/sDate.monthDays();
+        }
+        else {
+          slab += (sDate.monthDays()+1-sDate.getDate())/sDate.monthDays();
+          slab += eDate.getDate()/eDate.monthDays();
+         
+        }
+        console.log(slab);
+        return slab;
+      }
+      
+      function unitsPrice(units,slab) {
+        var pay = 0;
+        if(units < 0) {
+          return pay;
+        }
+        console.log(units+" "+pay);
+        
+        if(units === 0) {
+          return pay;
+        }
+        if(units > 1200) {
+          pay += ((units-1200)*slab)*8.75;
+          units = 1200;
+          return pay+unitsPrice(units,slab);
+        }
+        else if(units > 800) {
+          pay += ((units - 800)*slab)*8.10;
+          units = 800;
+          return pay+unitsPrice(units,slab);
+        }
+        else if(units > 400) {
+          pay += ((units-400)*slab)*7.30;
+          units = 400;
+          return pay+unitsPrice(units,slab);
+        }
+        else if(units > 200) {
+          pay += ((units-200)*slab)*5.95;
+          units = 200;
+          return pay+unitsPrice(units,slab);
+        }
+        else {
+          pay+= ((units)*slab)*4.00;
+          units = 0;
+          return pay+unitsPrice(units,slab);
+        }
+      }
+      function calcBill(f) {
+        var units = parseFloat(f.curr.value) - parseFloat(f.prev.value);
+        units = parseInt(units);
+        startDate = new Date(f.startDate.value);
+        endDate = new Date(f.endDate.value);
+        console.log(startDate);
+        console.log(endDate);
+        
+        var bill = 0;
+        var slab = getSlab(startDate,endDate)
+      
+        //FIXED CHARGES with 8% surcharge 
+        if(f.sancLoad.value === "2 kW") {
+          bill += 40*slab*1.08;
+        }
+        if(f.sancLoad.value === ">2-5 kW") {
+          bill += 100*slab*1.08;
+        }
+      
+        bill += unitsPrice(units,slab);
+        bill = bill*1.06; //PPAC  charges 6%
+        bill = bill*1.08; //8% Surcharge 8%
+        
+        bill = bill*1.05 //Electriciy Tax 5%
+      
+        bill = (bill).toFixed(2);
+        if(!units) {
+          $("#change").empty().html("Wrong Input");
+          return;
+        }
+        $("#change").empty().html("&#8377;"+bill+" (incl. taxes)");
+        var scrollPos =  $("#box").offset().top;
+       $(window).scrollTop(scrollPos);
+      
+      }
+        </script>
+</head>
+<body style="background-color: #dbff0063">
+<div class="topnav">
+<nav>
+	<button title="_click here to go to 'HOME'_"><a href="index.html"><b>Home</b></a></button> |
+	<button title="_click here to go to 'EDUCATION'_"><a href="education.html"><b>Education</b></a></button> |
+	<button title="_click here to go to 'PROJECT'_"><a href="project.html"><b>Project</b></a></button> |
+	<button title="_click here to go to 'CONTACTS'_"><a href="contact.html"><b>contacts</b></a></button> 
+	<button  data-toggle="tooltip" data-placement="bottom" title="LOGIN"><a href="login.html"><b>LOGIN</b></a></button>
+	
+</nav>
+<div class="container-fluid">
+
+    <div class="row">
+  
+      <div class="col-xs-12 col-sm-12 col-md-6 col-md-offset-3 col-lg-6 col-lg-offset-3 reducedCol well text-center">
+        <form action="#box" role="form" name="elecForm" class="form">
+          <fieldset class="form-group form-inline">
+  
+            <label for="curr">Current Reading</label> <input class="form-control inp" name="curr" type="number" value="" placeholder="Units in kWh">
+  
+            <label for="prev">Previous Reading</label> <input class="form-control inp" name="prev" type="" value="" placeholder="Units in kWh">
+  
+          </fieldset>
+  
+          <fieldset class="form-group form-inline">
+            <label for="startDate">Start Date</label>
+            <input class="form-control inp" name="startDate" type="date">
+            <label for="endDate">End Date</label>
+            <input class="form-control inp" name="endDate" type="date">
+          </fieldset>
+  
+          <fieldset class="form-group form-inline">
+            <label for="sancLoad">Sanctioned Load</label>
+            <select class="form-control inp" name="sancLoad">
+              <option>2 kW</option>
+              <option>>2-5 kW</option>
+            </select>
+          </fieldset>
+  
+          <fieldset class="form-group">
+            <button class="btn bg-primary getButton" type="button" onClick="calcBill(this.form)">Get Bill</button>
+          </fieldset>
+        </form>
+      </div>
+  
+      <div class="col-xs-12 col-sm-12 col-md-4 col-md-offset-4 col-lg-4 col-lg-offset-4">
+        <div class="box text-responsive" id="#box">
+          <center>
+            <h2>Bill : </h2><span class="change" id="change"></span></center>
+        </div>
+      </div>
+  
+    </div>
+  
+  
+  </div>
+</body>
+</html>
